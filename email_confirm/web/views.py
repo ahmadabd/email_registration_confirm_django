@@ -7,6 +7,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required       # for login_required
 import random
 from django.shortcuts import render, redirect
+from django.utils.crypto import get_random_string
 
 # Create your views here.
 
@@ -38,7 +39,7 @@ def signup(request):
             this_user = User.objects.get(username = username)
 
             # Verification Code
-            confirm_rand_str = random.randint(1000, 9999)
+            confirm_rand_str = random.randint(100, 9999)
             ConfirmMail.objects.create(user = this_user, code = confirm_rand_str)
 
             # sends to user its token
@@ -49,14 +50,17 @@ def signup(request):
                 [email],                                             # To
                 fail_silently = False,
             )
-            return redirect('activeRegistration')
+
+            url = get_random_string(length=12)
+
+            return redirect('activeRegistration', url)
     else:
         form = SignUpForm()
     return render(request, 'registration/signup.html', {'form': form })
 
 
 @csrf_exempt
-def activeRegistration(request):
+def activeRegistration(request, url):
 
     if request.method == 'POST':
 
